@@ -1,0 +1,468 @@
+{
+  "database": {
+    "name": "db_kemenag_minsel",
+    "description": "Database Kementerian Agama Kabupaten Minahasa Selatan - Data Gereja (Kristen) & Masjid/Mushollah (Islam) Tahun 2025/2026",
+    "charset": "utf8mb4",
+    "collation": "utf8mb4_unicode_ci"
+  },
+  "entities": [
+    {
+      "id": "kecamatan",
+      "name": "Kecamatan",
+      "description": "Table Wilayah Kecamatan",
+      "primary_key": "id",
+      "fields": [
+        {
+          "name": "id",
+          "type": "INT",
+          "constraint": ["AUTO_INCREMENT", "PRIMARY KEY"],
+          "nullable": false,
+          "description": "Unique identifier untuk kecamatan"
+        },
+        {
+          "name": "nama",
+          "type": "VARCHAR(100)",
+          "constraint": ["NOT NULL"],
+          "nullable": false,
+          "description": "Nama kecamatan"
+        },
+        {
+          "name": "kabupaten",
+          "type": "VARCHAR(100)",
+          "default": "Minahasa Selatan",
+          "nullable": true,
+          "description": "Nama kabupaten"
+        },
+        {
+          "name": "provinsi",
+          "type": "VARCHAR(100)",
+          "default": "Sulawesi Utara",
+          "nullable": true,
+          "description": "Nama provinsi"
+        }
+      ],
+      "total_records": 17,
+      "examples": [
+        {
+          "id": 1,
+          "nama": "Kec. Tumpaan",
+          "kabupaten": "Minahasa Selatan",
+          "provinsi": "Sulawesi Utara"
+        },
+        {
+          "id": 2,
+          "nama": "Kec. Tatapaan",
+          "kabupaten": "Minahasa Selatan",
+          "provinsi": "Sulawesi Utara"
+        }
+      ]
+    },
+    {
+      "id": "gereja",
+      "name": "Gereja",
+      "description": "Table Data Umat/Gereja Kristen",
+      "primary_key": "id",
+      "foreign_keys": [
+        {
+          "column": "kecamatan",
+          "references": "kecamatan.nama",
+          "relationship": "Many-to-One",
+          "description": "Relasi ke nama kecamatan"
+        }
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "type": "INT",
+          "constraint": ["AUTO_INCREMENT", "PRIMARY KEY"],
+          "nullable": false,
+          "description": "Unique identifier untuk gereja"
+        },
+        {
+          "name": "kecamatan",
+          "type": "VARCHAR(100)",
+          "constraint": ["NOT NULL"],
+          "nullable": false,
+          "description": "Nama kecamatan tempat gereja berada"
+        },
+        {
+          "name": "nama_gereja",
+          "type": "VARCHAR(200)",
+          "constraint": ["NOT NULL"],
+          "nullable": false,
+          "description": "Nama gereja"
+        },
+        {
+          "name": "kelurahan_desa",
+          "type": "VARCHAR(150)",
+          "nullable": true,
+          "description": "Nama kelurahan atau desa"
+        },
+        {
+          "name": "jumlah_umat_l",
+          "type": "INT",
+          "default": 0,
+          "nullable": true,
+          "description": "Jumlah umat laki-laki"
+        },
+        {
+          "name": "jumlah_umat_p",
+          "type": "INT",
+          "default": 0,
+          "nullable": true,
+          "description": "Jumlah umat perempuan"
+        },
+        {
+          "name": "jumlah_umat",
+          "type": "INT",
+          "default": 0,
+          "nullable": true,
+          "description": "Total jumlah umat"
+        },
+        {
+          "name": "nama_pimpinan",
+          "type": "VARCHAR(200)",
+          "nullable": true,
+          "description": "Nama pimpinan/pendeta gereja"
+        },
+        {
+          "name": "status_bangunan",
+          "type": "ENUM('Permanen','Semi Permanen','Darurat','Sewa/Kontrak')",
+          "default": "Permanen",
+          "nullable": true,
+          "description": "Status kondisi bangunan gereja"
+        },
+        {
+          "name": "jumlah_pdt",
+          "type": "INT",
+          "default": 0,
+          "nullable": true,
+          "description": "Jumlah pendeta"
+        },
+        {
+          "name": "jumlah_pdm",
+          "type": "INT",
+          "default": 0,
+          "nullable": true,
+          "description": "Jumlah pendeta muda atau pekerja gereja"
+        }
+      ],
+      "total_records": 594,
+      "examples": [
+        {
+          "id": 1,
+          "kecamatan": "Kec. Tumpaan",
+          "nama_gereja": "GMIM SOLA GRATIA",
+          "kelurahan_desa": "MATANI SATU",
+          "jumlah_umat_l": 411,
+          "jumlah_umat_p": 409,
+          "jumlah_umat": 820,
+          "nama_pimpinan": "Pdt. Olga R. Pangkey. M.Th",
+          "status_bangunan": "Permanen",
+          "jumlah_pdt": 2,
+          "jumlah_pdm": 0
+        },
+        {
+          "id": 2,
+          "kecamatan": "Kec. Tumpaan",
+          "nama_gereja": "KGPM EFRATA",
+          "kelurahan_desa": "MATANI SATU",
+          "jumlah_umat_l": 267,
+          "jumlah_umat_p": 248,
+          "jumlah_umat": 515,
+          "nama_pimpinan": "Gbl. Alexsander Wongkar, M.Th",
+          "status_bangunan": "Permanen",
+          "jumlah_pdt": 1,
+          "jumlah_pdm": 0
+        }
+      ]
+    },
+    {
+      "id": "masjid_bkm",
+      "name": "Masjid/Mushollah dan BKM",
+      "description": "Table Data Masjid, Mushollah dan BKM (Badan Kesejahteraan Masjid)",
+      "primary_key": "id",
+      "fields": [
+        {
+          "name": "id",
+          "type": "INT",
+          "constraint": ["AUTO_INCREMENT", "PRIMARY KEY"],
+          "nullable": false,
+          "description": "Unique identifier untuk masjid"
+        },
+        {
+          "name": "no_urut",
+          "type": "INT",
+          "nullable": true,
+          "description": "Nomor urut masjid"
+        },
+        {
+          "name": "wilayah_kua",
+          "type": "VARCHAR(100)",
+          "nullable": true,
+          "description": "Wilayah KUA (Kantor Urusan Agama) tempat masjid berada"
+        },
+        {
+          "name": "desa",
+          "type": "VARCHAR(150)",
+          "nullable": true,
+          "description": "Nama desa tempat masjid berada"
+        },
+        {
+          "name": "nama_masjid",
+          "type": "VARCHAR(200)",
+          "nullable": true,
+          "description": "Nama masjid"
+        },
+        {
+          "name": "ada_musholla",
+          "type": "TINYINT(1)",
+          "default": 0,
+          "nullable": true,
+          "description": "Indikator ada musholla: 1=Ada, 0=Tidak"
+        },
+        {
+          "name": "nama_imam",
+          "type": "VARCHAR(200)",
+          "nullable": true,
+          "description": "Nama imam masjid"
+        },
+        {
+          "name": "ketua_btm",
+          "type": "VARCHAR(200)",
+          "nullable": true,
+          "description": "Nama ketua BKM (Badan Kesejahteraan Masjid)"
+        },
+        {
+          "name": "keterangan",
+          "type": "VARCHAR(255)",
+          "nullable": true,
+          "description": "Keterangan tambahan"
+        }
+      ],
+      "total_records": 32,
+      "examples": [
+        {
+          "id": 1,
+          "no_urut": 1,
+          "wilayah_kua": "Kec. Tenga",
+          "desa": "Tanamon Utara",
+          "nama_masjid": "AT-Taqwa",
+          "ada_musholla": 0,
+          "nama_imam": "Anshar Baluntu",
+          "ketua_btm": "Yunus Illato",
+          "keterangan": null
+        },
+        {
+          "id": 2,
+          "no_urut": 2,
+          "wilayah_kua": "Kec. Tenga",
+          "desa": "Tanamon Induk",
+          "nama_masjid": "AL-Ikhlas",
+          "ada_musholla": 0,
+          "nama_imam": "Fauzi Taho",
+          "ketua_btm": "Ridwan Tegela",
+          "keterangan": null
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_kecamatan_gereja",
+      "name": "Kecamatan to Gereja",
+      "type": "One-to-Many",
+      "description": "Satu kecamatan memiliki banyak gereja",
+      "from": {
+        "entity": "kecamatan",
+        "key": "nama"
+      },
+      "to": {
+        "entity": "gereja",
+        "key": "kecamatan"
+      },
+      "cardinality": "1:N"
+    },
+    {
+      "id": "rel_kecamatan_masjid",
+      "name": "Kecamatan to Masjid",
+      "type": "One-to-Many",
+      "description": "Satu kecamatan (melalui wilayah_kua) memiliki banyak masjid",
+      "from": {
+        "entity": "kecamatan",
+        "key": "nama"
+      },
+      "to": {
+        "entity": "masjid_bkm",
+        "key": "wilayah_kua"
+      },
+      "cardinality": "1:N"
+    }
+  ],
+  "views": [
+    {
+      "name": "v_rekap_gereja_per_kecamatan",
+      "description": "View untuk rekap data gereja per kecamatan",
+      "query": "SELECT kecamatan, COUNT(*) AS jumlah_gereja, SUM(jumlah_umat_l) AS total_umat_laki, SUM(jumlah_umat_p) AS total_umat_perempuan, SUM(jumlah_umat) AS total_umat, SUM(jumlah_pdt) AS total_pendeta, SUM(jumlah_pdm) AS total_pdm FROM gereja GROUP BY kecamatan ORDER BY kecamatan",
+      "columns": [
+        {
+          "name": "kecamatan",
+          "type": "VARCHAR(100)",
+          "description": "Nama kecamatan"
+        },
+        {
+          "name": "jumlah_gereja",
+          "type": "INT",
+          "description": "Jumlah gereja di kecamatan tersebut"
+        },
+        {
+          "name": "total_umat_laki",
+          "type": "BIGINT",
+          "description": "Total umat laki-laki"
+        },
+        {
+          "name": "total_umat_perempuan",
+          "type": "BIGINT",
+          "description": "Total umat perempuan"
+        },
+        {
+          "name": "total_umat",
+          "type": "BIGINT",
+          "description": "Total umat keseluruhan"
+        },
+        {
+          "name": "total_pendeta",
+          "type": "BIGINT",
+          "description": "Total pendeta"
+        },
+        {
+          "name": "total_pdm",
+          "type": "BIGINT",
+          "description": "Total pendeta muda/pekerja"
+        }
+      ]
+    },
+    {
+      "name": "v_rekap_masjid_per_kua",
+      "description": "View untuk rekap data masjid per KUA",
+      "query": "SELECT wilayah_kua, COUNT(*) AS jumlah_masjid, SUM(ada_musholla) AS jumlah_musholla FROM masjid_bkm GROUP BY wilayah_kua ORDER BY wilayah_kua",
+      "columns": [
+        {
+          "name": "wilayah_kua",
+          "type": "VARCHAR(100)",
+          "description": "Wilayah KUA"
+        },
+        {
+          "name": "jumlah_masjid",
+          "type": "INT",
+          "description": "Jumlah masjid di wilayah KUA tersebut"
+        },
+        {
+          "name": "jumlah_musholla",
+          "type": "BIGINT",
+          "description": "Jumlah mushollah"
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "total_entities": 3,
+    "total_tables": 3,
+    "total_views": 2,
+    "total_records": 643,
+    "breakdown": {
+      "kecamatan": 17,
+      "gereja": 594,
+      "masjid_bkm": 32
+    }
+  },
+  "enum_values": {
+    "gereja_status_bangunan": [
+      "Permanen",
+      "Semi Permanen",
+      "Darurat",
+      "Sewa/Kontrak"
+    ],
+    "masjid_bkm_ada_musholla": [
+      {
+        "value": 1,
+        "description": "Ada mushollah"
+      },
+      {
+        "value": 0,
+        "description": "Tidak ada mushollah"
+      }
+    ]
+  },
+  "indexes": [
+    {
+      "table": "kecamatan",
+      "columns": ["id", "nama"],
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "gereja",
+      "columns": ["id"],
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "gereja",
+      "columns": ["kecamatan"],
+      "type": "INDEX",
+      "description": "Untuk optimasi query pencarian gereja per kecamatan"
+    },
+    {
+      "table": "masjid_bkm",
+      "columns": ["id"],
+      "type": "PRIMARY KEY"
+    },
+    {
+      "table": "masjid_bkm",
+      "columns": ["wilayah_kua"],
+      "type": "INDEX",
+      "description": "Untuk optimasi query pencarian masjid per KUA"
+    }
+  ],
+  "erd_diagram": {
+    "description": "Entity Relationship Diagram Representation",
+    "entities_summary": [
+      {
+        "name": "kecamatan",
+        "display": "┌──────────────┐\n│  KECAMATAN   │\n├──────────────┤\n│ id (PK)      │\n│ nama         │\n│ kabupaten    │\n│ provinsi     │\n└──────────────┘",
+        "attributes_count": 4
+      },
+      {
+        "name": "gereja",
+        "display": "┌──────────────────────┐\n│      GEREJA          │\n├──────────────────────┤\n│ id (PK)              │\n│ kecamatan (FK)       │\n│ nama_gereja          │\n│ kelurahan_desa       │\n│ jumlah_umat_l        │\n│ jumlah_umat_p        │\n│ jumlah_umat          │\n│ nama_pimpinan        │\n│ status_bangunan      │\n│ jumlah_pdt           │\n│ jumlah_pdm           │\n└──────────────────────┘",
+        "attributes_count": 11
+      },
+      {
+        "name": "masjid_bkm",
+        "display": "┌──────────────────────┐\n│   MASJID_BKM         │\n├──────────────────────┤\n│ id (PK)              │\n│ no_urut              │\n│ wilayah_kua (FK)     │\n│ desa                 │\n│ nama_masjid          │\n│ ada_musholla         │\n│ nama_imam            │\n│ ketua_btm            │\n│ keterangan           │\n└──────────────────────┘",
+        "attributes_count": 9
+      }
+    ],
+    "relationships_diagram": [
+      {
+        "from": "kecamatan",
+        "to": "gereja",
+        "relationship": "1:N (satu ke banyak)",
+        "description": "Satu kecamatan memiliki banyak gereja"
+      },
+      {
+        "from": "kecamatan",
+        "to": "masjid_bkm",
+        "relationship": "1:N (satu ke banyak)",
+        "description": "Satu kecamatan memiliki banyak masjid"
+      }
+    ]
+  },
+  "metadata": {
+    "generated_date": "2026-05-05",
+    "database_engine": "MySQL/MariaDB",
+    "charset": "utf8mb4",
+    "collation": "utf8mb4_unicode_ci",
+    "source": "db_kemenag_minsel.sql",
+    "description": "Skema database lengkap dalam format ERD (Entity-Relationship Diagram) JSON"
+  }
+}
