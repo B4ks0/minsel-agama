@@ -1,0 +1,129 @@
+{% extends 'main/base.html' %}
+{% block title %}Dashboard - Kemenag Minsel{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card green p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small">Total Gereja</div>
+          <div class="fs-2 fw-bold text-success">{{ total_gereja }}</div>
+          <div class="text-muted small">Data Rumah Ibadah Kristen</div>
+        </div>
+        <div class="stat-icon bg-success bg-opacity-10 text-success">
+          <i class="bi bi-building"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card blue p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small">Total Masjid / BKM</div>
+          <div class="fs-2 fw-bold text-primary">{{ total_masjid }}</div>
+          <div class="text-muted small">Data Rumah Ibadah Islam</div>
+        </div>
+        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+          <i class="bi bi-houses"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card orange p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small">Total Kecamatan</div>
+          <div class="fs-2 fw-bold text-warning">{{ total_kecamatan }}</div>
+          <div class="text-muted small">Wilayah Minahasa Selatan</div>
+        </div>
+        <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+          <i class="bi bi-geo-alt"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rekap Tables -->
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-table me-2 text-success"></i>Rekap Gereja per Kecamatan</h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-sm mb-0" id="tblRekGer">
+            <thead class="table-light">
+              <tr>
+                <th>Kecamatan</th>
+                <th class="text-center">Gereja</th>
+                <th class="text-center">Umat L</th>
+                <th class="text-center">Umat P</th>
+                <th class="text-center">Total Umat</th>
+                <th class="text-center">Pendeta</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in rekap_gereja %}
+              <tr>
+                <td>{{ r.kecamatan }}</td>
+                <td class="text-center">{{ r.jumlah_gereja }}</td>
+                <td class="text-center">{{ r.total_umat_laki }}</td>
+                <td class="text-center">{{ r.total_umat_perempuan }}</td>
+                <td class="text-center fw-semibold">{{ r.total_umat }}</td>
+                <td class="text-center">{{ r.total_pendeta }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-table me-2 text-primary"></i>Rekap Masjid per KUA</h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-sm mb-0" id="tblRekMas">
+            <thead class="table-light">
+              <tr>
+                <th>Wilayah KUA</th>
+                <th class="text-center">Masjid</th>
+                <th class="text-center">Musholla</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in rekap_masjid %}
+              <tr>
+                <td>{{ r.wilayah_kua }}</td>
+                <td class="text-center fw-semibold">{{ r.jumlah_masjid }}</td>
+                <td class="text-center">{{ r.jumlah_musholla }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+    $('#tblRekGer').DataTable({ pageLength: 10, language: { url: '' }, order: [[0,'asc']] });
+    $('#tblRekMas').DataTable({ pageLength: 10, order: [[0,'asc']] });
+  });
+</script>
+{% endblock %}

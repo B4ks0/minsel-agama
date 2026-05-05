@@ -1,0 +1,87 @@
+{% extends 'main/base.html' %}
+{% block title %}Masjid / BKM - Kemenag Minsel{% endblock %}
+{% block page_title %}Data Masjid / BKM{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-houses me-2 text-primary"></i>Daftar Masjid / BKM ({{ masjid_list|length }} data)</h6>
+    <a href="{% url 'masjid_tambah' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg me-1"></i> Tambah
+    </a>
+  </div>
+  <div class="card-body">
+    <form method="get" class="mb-3 d-flex flex-wrap gap-2">
+      <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" style="max-width:250px" placeholder="Cari nama masjid, desa, imam...">
+      <select name="kua" class="form-select form-select-sm" style="max-width:200px">
+        <option value="">Semua KUA</option>
+        {% for k in kua_list %}
+        <option value="{{ k }}" {% if kua == k %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i> Filter</button>
+      {% if q or kua %}<a href="{% url 'masjid_list' %}" class="btn btn-outline-danger btn-sm">Reset</a>{% endif %}
+    </form>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle" id="tblMas">
+        <thead class="table-light">
+          <tr>
+            <th width="40">No</th>
+            <th>Nama Masjid</th>
+            <th>Wilayah KUA</th>
+            <th>Desa</th>
+            <th>Nama Imam</th>
+            <th>Ketua BTM</th>
+            <th class="text-center">Musholla</th>
+            <th>Keterangan</th>
+            <th class="text-center" width="90">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for obj in masjid_list %}
+          <tr>
+            <td>{{ obj.no_urut|default:forloop.counter }}</td>
+            <td class="fw-semibold">{{ obj.nama_masjid|default:"-" }}</td>
+            <td><span class="badge bg-primary-subtle text-primary-emphasis">{{ obj.wilayah_kua|default:"-" }}</span></td>
+            <td>{{ obj.desa|default:"-" }}</td>
+            <td>{{ obj.nama_imam|default:"-" }}</td>
+            <td>{{ obj.ketua_btm|default:"-" }}</td>
+            <td class="text-center">
+              {% if obj.ada_musholla %}
+                <span class="badge bg-success">Ya</span>
+              {% else %}
+                <span class="badge bg-secondary">Tidak</span>
+              {% endif %}
+            </td>
+            <td>{{ obj.keterangan|default:"-" }}</td>
+            <td class="text-center">
+              <a href="{% url 'masjid_edit' obj.pk %}" class="btn btn-warning btn-action">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'masjid_hapus' obj.pk %}" class="btn btn-danger btn-action">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9" class="text-center text-muted py-4">Tidak ada data</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+    $('#tblMas').DataTable({
+      pageLength: 25,
+      order: [[0,'asc']],
+      searching: false,
+      columnDefs: [{ orderable: false, targets: [8] }]
+    });
+  });
+</script>
+{% endblock %}

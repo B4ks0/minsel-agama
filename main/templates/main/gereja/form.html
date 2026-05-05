@@ -1,0 +1,68 @@
+{% extends 'main/base.html' %}
+{% block title %}{{ judul }} - Kemenag Minsel{% endblock %}
+{% block page_title %}{{ judul }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-building me-2 text-success"></i>{{ judul }}</h6>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.nama_gereja.label }}</label>
+              {{ form.nama_gereja }}
+              {% if form.nama_gereja.errors %}<div class="text-danger small">{{ form.nama_gereja.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.kecamatan.label }}</label>
+              {{ form.kecamatan }}
+              {% if form.kecamatan.errors %}<div class="text-danger small">{{ form.kecamatan.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.kelurahan_desa.label }}</label>
+              {{ form.kelurahan_desa }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.nama_pimpinan.label }}</label>
+              {{ form.nama_pimpinan }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">{{ form.jumlah_umat_l.label }}</label>
+              {{ form.jumlah_umat_l }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">{{ form.jumlah_umat_p.label }}</label>
+              {{ form.jumlah_umat_p }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">{{ form.jumlah_umat.label }}</label>
+              {{ form.jumlah_umat }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">{{ form.jumlah_pdt.label }}</label>
+              {{ form.jumlah_pdt }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">{{ form.jumlah_pdm.label }}</label>
+              {{ form.jumlah_pdm }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">{{ form.status_bangunan.label }}</label>
+              {{ form.status_bangunan }}
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Simpan</button>
+            <a href="{% url 'gereja_list' %}" class="btn btn-outline-secondary">Batal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

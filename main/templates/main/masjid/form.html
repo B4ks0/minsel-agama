@@ -1,0 +1,61 @@
+{% extends 'main/base.html' %}
+{% block title %}{{ judul }} - Kemenag Minsel{% endblock %}
+{% block page_title %}{{ judul }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-houses me-2 text-primary"></i>{{ judul }}</h6>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label fw-semibold">{{ form.no_urut.label }}</label>
+              {{ form.no_urut }}
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">{{ form.nama_masjid.label }}</label>
+              {{ form.nama_masjid }}
+              {% if form.nama_masjid.errors %}<div class="text-danger small">{{ form.nama_masjid.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">{{ form.wilayah_kua.label }}</label>
+              {{ form.wilayah_kua }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.desa.label }}</label>
+              {{ form.desa }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.nama_imam.label }}</label>
+              {{ form.nama_imam }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.ketua_btm.label }}</label>
+              {{ form.ketua_btm }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">{{ form.keterangan.label }}</label>
+              {{ form.keterangan }}
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                {{ form.ada_musholla }}
+                <label class="form-check-label fw-semibold" for="{{ form.ada_musholla.id_for_label }}">Ada Musholla</label>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Simpan</button>
+            <a href="{% url 'masjid_list' %}" class="btn btn-outline-secondary">Batal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
