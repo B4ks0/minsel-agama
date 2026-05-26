@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.db.models import Q
 from .models import Kecamatan, Gereja, MasjidBkm, RekapGerejaPerKecamatan, RekapMasjidPerKua
 from .forms import KecamatanForm, GerejaForm, MasjidBkmForm
+from .analytics import run_spk, run_spk_gereja
 
 
 def dashboard(request):
@@ -18,6 +19,49 @@ def dashboard(request):
         'rekap_gereja': rekap_gereja,
         'rekap_masjid': rekap_masjid,
     })
+
+
+def spk_prioritas(request):
+    try:
+        eps = float(request.GET.get('eps', 0.45))
+    except ValueError:
+        eps = 0.45
+    try:
+        min_samples = int(request.GET.get('min_samples', 4))
+    except ValueError:
+        min_samples = 4
+
+    eps = min(max(eps, 0.10), 2.00)
+    min_samples = min(max(min_samples, 2), 20)
+
+    context = run_spk(
+        Gereja.objects.all().order_by('kecamatan', 'nama_gereja'),
+        MasjidBkm.objects.all().order_by('wilayah_kua', 'nama_masjid'),
+        eps=eps,
+        min_samples=min_samples,
+    )
+    return render(request, 'main/spk_prioritas.html', context)
+
+
+def spk_gereja(request):
+    try:
+        eps = float(request.GET.get('eps', 0.45))
+    except ValueError:
+        eps = 0.45
+    try:
+        min_samples = int(request.GET.get('min_samples', 4))
+    except ValueError:
+        min_samples = 4
+
+    eps = min(max(eps, 0.10), 2.00)
+    min_samples = min(max(min_samples, 2), 20)
+
+    context = run_spk_gereja(
+        Gereja.objects.all().order_by('kecamatan', 'nama_gereja'),
+        eps=eps,
+        min_samples=min_samples,
+    )
+    return render(request, 'main/spk_gereja.html', context)
 
 
 # --- Kecamatan ---

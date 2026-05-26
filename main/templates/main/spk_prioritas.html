@@ -1,0 +1,355 @@
+{% extends 'main/base.html' %}
+{% block title %}SPK Prioritas - Kemenag Minsel{% endblock %}
+{% block page_title %}SPK GIS Hybrid DBSCAN dan AHP-TOPSIS{% endblock %}
+
+{% block content %}
+<style>
+  .method-box { border-left: 4px solid #0f766e; background: #f8fafc; }
+  .priority-map { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; }
+  .region-tile { border: 1px solid #e5e7eb; border-radius: 8px; padding: .75rem; background: #fff; }
+  .region-tile.high { border-color: #fca5a5; background: #fff7f7; }
+  .region-tile.medium { border-color: #facc15; background: #fffdf0; }
+  .region-tile.low { border-color: #86efac; background: #f7fff9; }
+  .score-bar { height: 8px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+  .score-bar span { display: block; height: 100%; background: linear-gradient(90deg, #14b8a6, #f97316); }
+  .small-metric { font-size: .76rem; color: #64748b; }
+  .table thead th { white-space: nowrap; }
+</style>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="card method-box">
+      <div class="card-body">
+        <h5 class="fw-bold mb-2">Sistem Pendukung Keputusan Prioritas Pembinaan</h5>
+        <p class="text-muted mb-0">
+          Analisis memakai data asli pada database: DBSCAN mengelompokkan lembaga berdasarkan atribut yang tersedia,
+          sedangkan AHP-TOPSIS memberi skor prioritas. Komponen GIS ditampilkan sebagai pemetaan administratif
+          kecamatan/KUA karena database belum menyimpan koordinat titik lokasi.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+          <div class="col-6">
+            <label class="form-label small text-muted">Eps DBSCAN</label>
+            <input type="number" step="0.05" min="0.10" max="2.00" name="eps" value="{{ eps }}" class="form-control form-control-sm">
+          </div>
+          <div class="col-6">
+            <label class="form-label small text-muted">Min Samples</label>
+            <input type="number" min="2" max="20" name="min_samples" value="{{ min_samples }}" class="form-control form-control-sm">
+          </div>
+          <div class="col-12">
+            <button class="btn btn-dark btn-sm w-100"><i class="bi bi-arrow-repeat me-1"></i> Hitung Ulang</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="text-muted small">Ranking Gabungan</div>
+      <div class="fs-3 fw-bold">{{ combined_ranked|length }}</div>
+      <div class="small-metric">Gereja dan masjid dari data MySQL</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="text-muted small">Cluster Gereja</div>
+      <div class="fs-3 fw-bold">{{ gereja_clusters|length }}</div>
+      <div class="small-metric">Termasuk outlier jika terdeteksi</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="text-muted small">Cluster Masjid/BKM</div>
+      <div class="fs-3 fw-bold">{{ masjid_clusters|length }}</div>
+      <div class="small-metric">Berbasis kelengkapan atribut tersedia</div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header bg-white py-3">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-clipboard-data me-2 text-dark"></i>Evaluasi Model DBSCAN</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="border rounded p-3 h-100">
+          <div class="fw-semibold mb-2">Gereja</div>
+          <div class="d-flex justify-content-between border-bottom py-1"><span>Total data</span><strong>{{ gereja_evaluation.total_data }}</strong></div>
+          <div class="d-flex justify-content-between border-bottom py-1"><span>Jumlah cluster</span><strong>{{ gereja_evaluation.cluster_count }}</strong></div>
+          <div class="d-flex justify-content-between border-bottom py-1"><span>Outlier</span><strong>{{ gereja_evaluation.outlier_count }} ({{ gereja_evaluation.outlier_percent }}%)</strong></div>
+          <div class="d-flex justify-content-between py-1"><span>Silhouette</span><strong>{{ gereja_evaluation.silhouette_label }}</strong></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="border rounded p-3 h-100">
+          <div class="fw-semibold mb-2">Masjid/BKM</div>
+          <div class="d-flex justify-content-between border-bottom py-1"><span>Total data</span><strong>{{ masjid_evaluation.total_data }}</strong></div>
+          <div class="d-flex justify-content-between border-bottom py-1"><span>Jumlah cluster</span><strong>{{ masjid_evaluation.cluster_count }}</strong></div>
+          <div class="d-flex justify-content-between border-bottom py-1"><span>Outlier</span><strong>{{ masjid_evaluation.outlier_count }} ({{ masjid_evaluation.outlier_percent }}%)</strong></div>
+          <div class="d-flex justify-content-between py-1"><span>Silhouette</span><strong>{{ masjid_evaluation.silhouette_label }}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header bg-white py-3">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-map me-2 text-success"></i>Peta Prioritas Administratif Gereja per Kecamatan</h6>
+  </div>
+  <div class="card-body">
+    <div class="priority-map">
+      {% for item in gereja_wilayah %}
+      <div class="region-tile {% if item.priority == 'Tinggi' %}high{% elif item.priority == 'Sedang' %}medium{% else %}low{% endif %}">
+        <div class="d-flex justify-content-between gap-2">
+          <strong>{{ item.nama }}</strong>
+          <span class="badge {% if item.priority == 'Tinggi' %}bg-danger{% elif item.priority == 'Sedang' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ item.priority }}</span>
+        </div>
+        <div class="score-bar my-2"><span style="width: {{ item.score_percent }}%"></span></div>
+        <div class="small-metric">{{ item.total }} data, skor {{ item.score|floatformat:3 }}</div>
+        <div class="small-metric">Tinggi {{ item.tinggi }} | Sedang {{ item.sedang }} | Rendah {{ item.rendah }}</div>
+      </div>
+      {% empty %}
+      <div class="text-muted">Belum ada data gereja.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header bg-white py-3">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-map me-2 text-primary"></i>Peta Prioritas Administratif Masjid/BKM per KUA</h6>
+  </div>
+  <div class="card-body">
+    <div class="priority-map">
+      {% for item in masjid_wilayah %}
+      <div class="region-tile {% if item.priority == 'Tinggi' %}high{% elif item.priority == 'Sedang' %}medium{% else %}low{% endif %}">
+        <div class="d-flex justify-content-between gap-2">
+          <strong>{{ item.nama }}</strong>
+          <span class="badge {% if item.priority == 'Tinggi' %}bg-danger{% elif item.priority == 'Sedang' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ item.priority }}</span>
+        </div>
+        <div class="score-bar my-2"><span style="width: {{ item.score_percent }}%"></span></div>
+        <div class="small-metric">{{ item.total }} data, skor {{ item.score|floatformat:3 }}</div>
+        <div class="small-metric">Tinggi {{ item.tinggi }} | Sedang {{ item.sedang }} | Rendah {{ item.rendah }}</div>
+      </div>
+      {% empty %}
+      <div class="text-muted">Belum ada data masjid/BKM.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold">Bobot AHP Gereja</h6>
+      </div>
+      <div class="card-body">
+        {% for key, value in gereja_weights.items %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span>{{ key|title }}</span>
+          <strong>{{ value|floatformat:2 }}</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold">Bobot AHP Masjid/BKM</h6>
+      </div>
+      <div class="card-body">
+        {% for key, value in masjid_weights.items %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span>{{ key|title }}</span>
+          <strong>{{ value|floatformat:2 }}</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header bg-white py-3">
+    <h6 class="mb-0 fw-semibold"><i class="bi bi-trophy me-2 text-warning"></i>Indeks Gabungan Indikatif AHP-TOPSIS</h6>
+  </div>
+  <div class="card-body">
+    <p class="text-muted small mb-3">
+      Skor gereja dan masjid/BKM dihitung dari kriteria berbeda, sehingga tabel ini dipakai sebagai indeks pembacaan cepat.
+      Ranking utama untuk analisis ilmiah tetap dibaca terpisah pada tabel gereja dan masjid/BKM.
+    </p>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle" id="tblRank">
+        <thead class="table-light">
+          <tr>
+            <th>Rank</th>
+            <th>Nama Lembaga</th>
+            <th>Jenis</th>
+            <th>Wilayah</th>
+            <th>Detail</th>
+            <th>Skor</th>
+            <th>Prioritas</th>
+            <th>Cluster</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in combined_ranked %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td class="fw-semibold">{{ row.nama }}</td>
+            <td>{{ row.jenis }}</td>
+            <td>{{ row.wilayah }}</td>
+            <td>{{ row.detail }}</td>
+            <td>{{ row.score|floatformat:4 }}</td>
+            <td>
+              <span class="badge {% if row.priority == 'Tinggi' %}bg-danger{% elif row.priority == 'Sedang' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ row.priority }}</span>
+            </td>
+            <td>{{ row.cluster }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold">Top 25 Prioritas Gereja</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-sm align-middle" id="tblGerejaRank">
+            <thead class="table-light">
+              <tr>
+                <th>Rank</th>
+                <th>Nama</th>
+                <th>Kecamatan</th>
+                <th>Skor</th>
+                <th>Prioritas</th>
+                <th>Cluster</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in gereja_ranked|slice:":25" %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="fw-semibold">{{ row.nama }}</td>
+                <td>{{ row.wilayah }}</td>
+                <td>{{ row.score|floatformat:4 }}</td>
+                <td>
+                  <span class="badge {% if row.priority == 'Tinggi' %}bg-danger{% elif row.priority == 'Sedang' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ row.priority }}</span>
+                </td>
+                <td>{{ row.cluster }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold">Top 25 Prioritas Masjid/BKM</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-sm align-middle" id="tblMasjidRank">
+            <thead class="table-light">
+              <tr>
+                <th>Rank</th>
+                <th>Nama</th>
+                <th>Wilayah</th>
+                <th>Skor</th>
+                <th>Prioritas</th>
+                <th>Cluster</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in masjid_ranked|slice:":25" %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="fw-semibold">{{ row.nama }}</td>
+                <td>{{ row.wilayah }}</td>
+                <td>{{ row.score|floatformat:4 }}</td>
+                <td>
+                  <span class="badge {% if row.priority == 'Tinggi' %}bg-danger{% elif row.priority == 'Sedang' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ row.priority }}</span>
+                </td>
+                <td>{{ row.cluster }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold">Distribusi Cluster Gereja</h6>
+      </div>
+      <div class="card-body">
+        {% for label, total in gereja_clusters %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span>{{ label }}</span>
+          <strong>{{ total }}</strong>
+        </div>
+        {% empty %}
+        <div class="text-muted">Belum ada cluster.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header bg-white py-3">
+        <h6 class="mb-0 fw-semibold">Distribusi Cluster Masjid/BKM</h6>
+      </div>
+      <div class="card-body">
+        {% for label, total in masjid_clusters %}
+        <div class="d-flex justify-content-between border-bottom py-2">
+          <span>{{ label }}</span>
+          <strong>{{ total }}</strong>
+        </div>
+        {% empty %}
+        <div class="text-muted">Belum ada cluster.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+    $('#tblRank').DataTable({
+      pageLength: 25,
+      order: [[0, 'asc']],
+      columnDefs: [{ orderable: false, targets: [7] }]
+    });
+    $('#tblGerejaRank').DataTable({ pageLength: 10, order: [[0, 'asc']] });
+    $('#tblMasjidRank').DataTable({ pageLength: 10, order: [[0, 'asc']] });
+  });
+</script>
+{% endblock %}

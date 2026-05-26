@@ -3,6 +3,8 @@ from . import views
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
+    path('spk-prioritas/', views.spk_prioritas, name='spk_prioritas'),
+    path('spk-gereja/', views.spk_gereja, name='spk_gereja'),
 
     path('kecamatan/', views.kecamatan_list, name='kecamatan_list'),
     path('kecamatan/tambah/', views.kecamatan_tambah, name='kecamatan_tambah'),
