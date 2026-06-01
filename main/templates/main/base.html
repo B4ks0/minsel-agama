@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -21,7 +22,12 @@
       padding: 1.2rem 1rem;
       border-bottom: 1px solid rgba(255,255,255,.1);
     }
-    #sidebar .brand img { width: 38px; margin-right: 8px; }
+    .brand-logos { display: flex; align-items: center; gap: 10px; margin-right: 12px; flex: 0 0 auto; }
+    .brand-logo {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+    }
     #sidebar .brand-text { color: #fff; font-weight: 700; font-size: 0.95rem; line-height: 1.2; }
     #sidebar .nav-link {
       color: rgba(255,255,255,.75);
@@ -47,6 +53,7 @@
       border-bottom: 1px solid #e3e8ef;
       padding: .75rem 1.5rem;
     }
+    .topbar-logo { width: 34px; height: 34px; object-fit: contain; }
     .card { border: none; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
     .stat-card { border-left: 4px solid; }
     .stat-card.green  { border-color: #22c55e; }
@@ -67,6 +74,10 @@
 <!-- Sidebar -->
 <nav id="sidebar">
   <div class="brand d-flex align-items-center">
+    <div class="brand-logos" aria-label="Logo institusi">
+      <img src="{% static 'main/img/logo-kemenag.png' %}" alt="Logo Kementerian Agama" class="brand-logo">
+      <img src="{% static 'main/img/logo-minahasa-selatan.png' %}" alt="Logo Kabupaten Minahasa Selatan" class="brand-logo">
+    </div>
     <div>
       <div class="brand-text">KEMENAG</div>
       <div style="color:rgba(255,255,255,.5);font-size:.75rem;">Minahasa Selatan</div>
@@ -74,6 +85,7 @@
   </div>
   <ul class="nav flex-column mt-2">
     <li class="nav-label">Menu</li>
+    {% if request.user.is_staff %}
     <li class="nav-item">
       <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
         <i class="bi bi-speedometer2 me-2"></i> Dashboard
@@ -89,6 +101,7 @@
         <i class="bi bi-bounding-box-circles me-2"></i> SPK Gereja
       </a>
     </li>
+    {% endif %}
     <li class="nav-label">Data</li>
     <li class="nav-item">
       <a class="nav-link {% if 'kecamatan' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'kecamatan_list' %}">
@@ -106,13 +119,24 @@
       </a>
     </li>
   </ul>
+  <div class="position-absolute bottom-0 start-0 end-0 p-3" style="border-top:1px solid rgba(255,255,255,.1);">
+    <div class="text-white small fw-semibold">{{ request.user.username }}</div>
+    <div class="mb-2" style="color:rgba(255,255,255,.5);font-size:.75rem;">{% if request.user.is_staff %}Admin{% else %}User View Only{% endif %}</div>
+    <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light w-100">
+      <i class="bi bi-box-arrow-right me-1"></i> Logout
+    </a>
+  </div>
 </nav>
 
 <!-- Main Content -->
 <div id="main-content">
   <div class="topbar d-flex align-items-center justify-content-between">
     <h6 class="mb-0 fw-semibold text-secondary">{% block page_title %}Dashboard{% endblock %}</h6>
-    <span class="text-muted small">Sistem Informasi Kemenag Minsel</span>
+    <div class="d-flex align-items-center gap-2">
+      <img src="{% static 'main/img/logo-kemenag.png' %}" alt="Logo Kementerian Agama" class="topbar-logo">
+      <img src="{% static 'main/img/logo-minahasa-selatan.png' %}" alt="Logo Kabupaten Minahasa Selatan" class="topbar-logo">
+      <span class="text-muted small">Sistem Informasi Kemenag Minsel</span>
+    </div>
   </div>
 
   <div class="p-4">

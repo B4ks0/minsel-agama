@@ -6,9 +6,11 @@
 <div class="card">
   <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
     <h6 class="mb-0 fw-semibold"><i class="bi bi-building me-2 text-success"></i>Daftar Gereja ({{ gereja_list|length }} data)</h6>
+    {% if request.user.is_staff %}
     <a href="{% url 'gereja_tambah' %}" class="btn btn-success btn-sm">
       <i class="bi bi-plus-lg me-1"></i> Tambah
     </a>
+    {% endif %}
   </div>
   <div class="card-body">
     <form method="get" class="mb-3 d-flex flex-wrap gap-2">
@@ -35,7 +37,9 @@
             <th class="text-center">Total</th>
             <th>Pimpinan</th>
             <th>Status</th>
+            {% if request.user.is_staff %}
             <th class="text-center" width="90">Aksi</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -60,6 +64,7 @@
                 <span class="badge bg-secondary badge-status">{{ obj.status_bangunan|default:"-" }}</span>
               {% endif %}
             </td>
+            {% if request.user.is_staff %}
             <td class="text-center">
               <a href="{% url 'gereja_edit' obj.pk %}" class="btn btn-warning btn-action">
                 <i class="bi bi-pencil"></i>
@@ -68,6 +73,7 @@
                 <i class="bi bi-trash"></i>
               </a>
             </td>
+            {% endif %}
           </tr>
           {% empty %}
           <tr><td colspan="10" class="text-center text-muted py-4">Tidak ada data</td></tr>
@@ -86,7 +92,9 @@
       pageLength: 25,
       order: [[2,'asc'],[1,'asc']],
       searching: false,
+      {% if request.user.is_staff %}
       columnDefs: [{ orderable: false, targets: [9] }]
+      {% endif %}
     });
   });
 </script>

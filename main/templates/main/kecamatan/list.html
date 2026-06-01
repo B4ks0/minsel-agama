@@ -6,9 +6,11 @@
 <div class="card">
   <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
     <h6 class="mb-0 fw-semibold"><i class="bi bi-geo-alt me-2 text-warning"></i>Daftar Kecamatan</h6>
+    {% if request.user.is_staff %}
     <a href="{% url 'kecamatan_tambah' %}" class="btn btn-primary btn-sm">
       <i class="bi bi-plus-lg me-1"></i> Tambah
     </a>
+    {% endif %}
   </div>
   <div class="card-body">
     <form method="get" class="mb-3 d-flex gap-2">
@@ -24,7 +26,9 @@
             <th>Nama Kecamatan</th>
             <th>Kabupaten</th>
             <th>Provinsi</th>
+            {% if request.user.is_staff %}
             <th class="text-center" width="120">Aksi</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -34,6 +38,7 @@
             <td class="fw-semibold">{{ obj.nama }}</td>
             <td>{{ obj.kabupaten }}</td>
             <td>{{ obj.provinsi }}</td>
+            {% if request.user.is_staff %}
             <td class="text-center">
               <a href="{% url 'kecamatan_edit' obj.pk %}" class="btn btn-warning btn-action btn-sm">
                 <i class="bi bi-pencil"></i>
@@ -42,6 +47,7 @@
                 <i class="bi bi-trash"></i>
               </a>
             </td>
+            {% endif %}
           </tr>
           {% empty %}
           <tr><td colspan="5" class="text-center text-muted py-4">Tidak ada data</td></tr>

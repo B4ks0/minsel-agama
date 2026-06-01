@@ -1,12 +1,58 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from functools import wraps
 from .models import Kecamatan, Gereja, MasjidBkm, RekapGerejaPerKecamatan, RekapMasjidPerKua
 from .forms import KecamatanForm, GerejaForm, MasjidBkmForm
 from .analytics import run_spk, run_spk_gereja
 
 
+def is_admin_user(user):
+    return user.is_authenticated and user.is_staff
+
+
+def admin_required(view_func):
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if not is_admin_user(request.user):
+            messages.warning(request, 'Akun user hanya dapat melihat data. Fitur SPK dan CRUD khusus admin.')
+            return redirect('gereja_list')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard' if request.user.is_staff else 'gereja_list')
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            next_url = request.GET.get('next')
+            if user.is_staff:
+                return redirect(next_url or 'dashboard')
+            return redirect('gereja_list')
+        messages.error(request, 'Username atau password tidak sesuai.')
+
+    return render(request, 'main/auth/login.html')
+
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'Anda berhasil logout.')
+    return redirect('login')
+
+
+@login_required
 def dashboard(request):
+    if not request.user.is_staff:
+        return redirect('gereja_list')
     total_gereja = Gereja.objects.count()
     total_masjid = MasjidBkm.objects.count()
     total_kecamatan = Kecamatan.objects.count()
@@ -21,6 +67,7 @@ def dashboard(request):
     })
 
 
+@admin_required
 def spk_prioritas(request):
     try:
         eps = float(request.GET.get('eps', 0.45))
@@ -43,6 +90,7 @@ def spk_prioritas(request):
     return render(request, 'main/spk_prioritas.html', context)
 
 
+@admin_required
 def spk_gereja(request):
     try:
         eps = float(request.GET.get('eps', 0.45))
@@ -66,6 +114,7 @@ def spk_gereja(request):
 
 # --- Kecamatan ---
 
+@login_required
 def kecamatan_list(request):
     q = request.GET.get('q', '')
     qs = Kecamatan.objects.all().order_by('nama')
@@ -74,6 +123,7 @@ def kecamatan_list(request):
     return render(request, 'main/kecamatan/list.html', {'kecamatan_list': qs, 'q': q})
 
 
+@admin_required
 def kecamatan_tambah(request):
     form = KecamatanForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -83,6 +133,7 @@ def kecamatan_tambah(request):
     return render(request, 'main/kecamatan/form.html', {'form': form, 'judul': 'Tambah Kecamatan'})
 
 
+@admin_required
 def kecamatan_edit(request, pk):
     obj = get_object_or_404(Kecamatan, pk=pk)
     form = KecamatanForm(request.POST or None, instance=obj)
@@ -93,6 +144,7 @@ def kecamatan_edit(request, pk):
     return render(request, 'main/kecamatan/form.html', {'form': form, 'judul': 'Edit Kecamatan', 'obj': obj})
 
 
+@admin_required
 def kecamatan_hapus(request, pk):
     obj = get_object_or_404(Kecamatan, pk=pk)
     if request.method == 'POST':
@@ -104,6 +156,7 @@ def kecamatan_hapus(request, pk):
 
 # --- Gereja ---
 
+@login_required
 def gereja_list(request):
     q = request.GET.get('q', '')
     kec = request.GET.get('kec', '')
@@ -121,6 +174,7 @@ def gereja_list(request):
     })
 
 
+@admin_required
 def gereja_tambah(request):
     form = GerejaForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -130,6 +184,7 @@ def gereja_tambah(request):
     return render(request, 'main/gereja/form.html', {'form': form, 'judul': 'Tambah Gereja'})
 
 
+@admin_required
 def gereja_edit(request, pk):
     obj = get_object_or_404(Gereja, pk=pk)
     form = GerejaForm(request.POST or None, instance=obj)
@@ -140,6 +195,7 @@ def gereja_edit(request, pk):
     return render(request, 'main/gereja/form.html', {'form': form, 'judul': 'Edit Gereja', 'obj': obj})
 
 
+@admin_required
 def gereja_hapus(request, pk):
     obj = get_object_or_404(Gereja, pk=pk)
     if request.method == 'POST':
@@ -151,6 +207,7 @@ def gereja_hapus(request, pk):
 
 # --- Masjid BKM ---
 
+@login_required
 def masjid_list(request):
     q = request.GET.get('q', '')
     kua = request.GET.get('kua', '')
@@ -168,6 +225,7 @@ def masjid_list(request):
     })
 
 
+@admin_required
 def masjid_tambah(request):
     form = MasjidBkmForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -177,6 +235,7 @@ def masjid_tambah(request):
     return render(request, 'main/masjid/form.html', {'form': form, 'judul': 'Tambah Masjid/BKM'})
 
 
+@admin_required
 def masjid_edit(request, pk):
     obj = get_object_or_404(MasjidBkm, pk=pk)
     form = MasjidBkmForm(request.POST or None, instance=obj)
@@ -187,6 +246,7 @@ def masjid_edit(request, pk):
     return render(request, 'main/masjid/form.html', {'form': form, 'judul': 'Edit Masjid/BKM', 'obj': obj})
 
 
+@admin_required
 def masjid_hapus(request, pk):
     obj = get_object_or_404(MasjidBkm, pk=pk)
     if request.method == 'POST':
